@@ -184,6 +184,8 @@ class ServiceLocator extends Component
      * - an object: When [[get()]] is called, this object will be returned.
      *
      * @throws InvalidConfigException if the definition is an invalid configuration array
+     * // $id -> 组件ID，对应配置文件中'components'中的key
+     * // $definition -> 组件的定义信息，对应配置文件中'components'中的value
      */
     public function set($id, $definition)
     {
@@ -200,6 +202,7 @@ class ServiceLocator extends Component
         } elseif (is_array($definition)) {
             // a configuration array
             if (isset($definition['__class'])) {
+                // 如果配置类时，使用的是__class，那么需要转换为class。 -> 貌似这块代码是用来兼容老版本的。
                 $this->_definitions[$id] = $definition;
                 $this->_definitions[$id]['class'] = $definition['__class'];
                 unset($this->_definitions[$id]['__class']);

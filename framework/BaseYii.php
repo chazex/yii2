@@ -213,23 +213,30 @@ class BaseYii
      *
      * @throws InvalidArgumentException if $path is an invalid alias.
      * @see getAlias()
+     * $path为空，表示删除这个alias
      */
     public static function setAlias($alias, $path)
     {
+        // 补充@
         if (strncmp($alias, '@', 1)) {
             $alias = '@' . $alias;
         }
+        // 取root：alias开始到第一个/部分
         $pos = strpos($alias, '/');
         $root = $pos === false ? $alias : substr($alias, 0, $pos);
+
         if ($path !== null) {
+            // 添加alias
             $path = strncmp($path, '@', 1) ? rtrim($path, '\\/') : static::getAlias($path);
             if (!isset(static::$aliases[$root])) {
+                // root不存在
                 if ($pos === false) {
                     static::$aliases[$root] = $path;
                 } else {
                     static::$aliases[$root] = [$alias => $path];
                 }
             } elseif (is_string(static::$aliases[$root])) {
+                // root存在，并且是字符串
                 if ($pos === false) {
                     static::$aliases[$root] = $path;
                 } else {
@@ -243,6 +250,7 @@ class BaseYii
                 krsort(static::$aliases[$root]);
             }
         } elseif (isset(static::$aliases[$root])) {
+            // 清楚alias
             if (is_array(static::$aliases[$root])) {
                 unset(static::$aliases[$root][$alias]);
             } elseif ($pos === false) {

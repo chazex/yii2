@@ -200,15 +200,25 @@ abstract class Application extends Module
      */
     public function __construct($config = [])
     {
+        // 在真实项目的入口文件(backend/web/index.php)中，在require(__DIR__ . '/../../vendor/yiisoft/yii2/Yii.php'); 时，初始化了依赖注入容器 Yii::$container = new yii\di\Container();
+        // 由于源码中没有index.php文件，故记录再次
+
         Yii::$app = $this;
         static::setInstance($this);
 
         $this->state = self::STATE_BEGIN;
 
+        // 1. 检查config.id
+        // 2. 设置basePath，vendorPath，runtimePath等路径
+        // 3. 合并核心组件和用户自定义组件，$config是引用类型，故$config是合并后的组件列表
         $this->preInit($config);
 
+        // 注册错误处理
         $this->registerErrorHandler($config);
 
+        // 因为base/Application间接继承了Component，所以这里可以通过这种方式调用Component的构造函数，这样做可以跳过某些父类构造器，而直接执行某个中间父类的构造器。 parent::__construct()，就是一层层的找父类的构造器, 找到一个即停止。
+        // 1. 将$config中的配置信息，保存到当前对象(base/Application.php)的属性中
+        // 2. 调用init()方法
         Component::__construct($config);
     }
 
@@ -233,10 +243,12 @@ abstract class Application extends Module
         }
 
         if (isset($config['vendorPath'])) {
+            // 设置vendorPath
             $this->setVendorPath($config['vendorPath']);
             unset($config['vendorPath']);
         } else {
             // set "@vendor"
+            // 如果在配置文件中没有指定vendorPath，这通过反射机制获取类的路径名，然后得到路径
             $this->getVendorPath();
         }
         if (isset($config['runtimePath'])) {
@@ -261,10 +273,14 @@ abstract class Application extends Module
         }
 
         // merge core components with custom components
+        // 合并核心组件和用户自定义组件
         foreach ($this->coreComponents() as $id => $component) {
             if (!isset($config['components'][$id])) {
+                // 用户没有对此核心组件进行自定义，则使用此核心组件的默认配置
                 $config['components'][$id] = $component;
             } elseif (is_array($config['components'][$id]) && !isset($config['components'][$id]['class'])) {
+                // 用户对此核心组件进行了自定义，但是只做了简单的配置，没有定义组件具体的类，则使用默认配置的类
+                // 这里的目的是，如果想使用此组件的默认类，但又想修改一些配置项，此时可以不必填写类
                 $config['components'][$id]['class'] = $component['class'];
             }
         }
@@ -307,9 +323,11 @@ abstract class Application extends Module
             }
         }
 
+        // $this->bootstrap变量对应的是main.php，main-local.php中bootstrap的值（bootstrap和components同级, 值是一个数组, 如["log", "debug", "gii"]）
         foreach ($this->bootstrap as $mixed) {
             $component = null;
             if ($mixed instanceof \Closure) {
+                // 如果是闭包
                 Yii::debug('Bootstrap with Closure', __METHOD__);
                 if (!$component = call_user_func($mixed, $this)) {
                     continue;
@@ -329,6 +347,7 @@ abstract class Application extends Module
             }
 
             if ($component instanceof BootstrapInterface) {
+                // 如果组件实现了BootstrapInterface接口，那么调用bootstrap()方法
                 Yii::debug('Bootstrap with ' . get_class($component) . '::bootstrap()', __METHOD__);
                 $component->bootstrap($this);
             } else {
