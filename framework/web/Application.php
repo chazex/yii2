@@ -94,6 +94,7 @@ class Application extends \yii\base\Application
                 return $this->getResponse()->redirect(Url::to($url, $e->scheme), $e->statusCode);
             }
         } else {
+            // catch all模式：如果服务处于维护模式，或者想用一个action处理所有的请求的时候，会使用catch all。
             $route = $this->catchAll[0];
             $params = $this->catchAll;
             unset($params[0]);

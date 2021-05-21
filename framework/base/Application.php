@@ -414,6 +414,7 @@ abstract class Application extends Module
             $this->trigger(self::EVENT_AFTER_REQUEST);
 
             $this->state = self::STATE_SENDING_RESPONSE;
+            // 发送Response响应
             $response->send();
 
             $this->state = self::STATE_END;

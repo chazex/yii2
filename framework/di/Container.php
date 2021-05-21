@@ -331,6 +331,7 @@ class Container extends Component
      * @param string|array|callable $definition the class definition
      * @return array the normalized class definition
      * @throws InvalidConfigException if the definition is invalid.
+     * // 类定义 格式化
      */
     protected function normalizeDefinition($class, $definition)
     {
@@ -344,6 +345,7 @@ class Container extends Component
             return $definition;
         } elseif (is_array($definition)) {
             if (!isset($definition['class']) && isset($definition['__class'])) {
+                // __class 改为 class，应该是为了兼容历史版本
                 $definition['class'] = $definition['__class'];
                 unset($definition['__class']);
             }

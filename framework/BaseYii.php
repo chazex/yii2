@@ -336,16 +336,17 @@ class BaseYii
      *
      * @param string|array|callable $type the object type. This can be specified in one of the following forms:
      *
-     * - a string: representing the class name of the object to be created
-     * - a configuration array: the array must contain a `class` element which is treated as the object class,
-     *   and the rest of the name-value pairs will be used to initialize the corresponding object properties
-     * - a PHP callable: either an anonymous function or an array representing a class method (`[$class or $object, $method]`).
-     *   The callable should return a new instance of the object being created.
+     * - a string: representing the class name of the object to be created // 字符串：要被创建的对象的类名
+     * - a configuration array: the array must contain a `class` element which is treated as the object class, // 配置数组：数组必须包含`class`元素，表示要被创建的对象的类名
+     *   and the rest of the name-value pairs will be used to initialize the corresponding object properties   // 剩余的 name-value对，会被用来初始化对应的对象属性
+     * - a PHP callable: either an anonymous function or an array representing a class method (`[$class or $object, $method]`). // php可被调用：匿名函数，或者代表类方法的数组(`[$class or $object, $method]`)
+     *   The callable should return a new instance of the object being created. // 被调用后，返回一个要被创建的对象实例
      *
      * @param array $params the constructor parameters
      * @return object the created object
      * @throws InvalidConfigException if the configuration is invalid.
      * @see \yii\di\Container
+     * 创建对象
      */
     public static function createObject($type, array $params = [])
     {
