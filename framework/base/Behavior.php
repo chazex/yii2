@@ -67,6 +67,9 @@ class Behavior extends BaseObject
     }
 
     /**
+     * 将behavior对象，绑定到组件上。
+     * 默认的实现会设置 [[owner]] 属性，并且会把在[[events]]中声明的事件，也绑定到owner上。
+     * 如果你想要override这个方法，确保你要调用父类的实现。
      * Attaches the behavior object to the component.
      * The default implementation will set the [[owner]] property
      * and attach event handlers as declared in [[events]].
@@ -78,6 +81,7 @@ class Behavior extends BaseObject
         $this->owner = $owner;
         foreach ($this->events() as $event => $handler) {
             $this->_attachedEvents[$event] = $handler;
+            // 将behavior中设置的事件，绑定到hehavior的owner上。
             $owner->on($event, is_string($handler) ? [$this, $handler] : $handler);
         }
     }
