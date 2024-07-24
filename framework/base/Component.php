@@ -727,12 +727,19 @@ class Component extends BaseObject
 
     /**
      * Makes sure that the behaviors declared in [[behaviors()]] are attached to this component.
-     * 确保通过 [[behaviors()]] 方法声明的behaviors， 被绑定到组件上
+     * 确保通过 [[behaviors()]] 方法声明的behaviors， 被绑定到组件上。
+     * 
+     * 这个方法会在Component的诸多地方调用 __get() __set() __isset() __unset() __call()canGetProperty() hasMethod() hasEventHandlers() on() off() 等用到，看到这么多是不是头疼？
+     * 一点都不复杂，一句话，只要涉及到类的属性、方法、事件这个函数都会被调用到。 （这里多提一下，虽然多个地方都会调用到这个函数，但是里面的核心逻辑只会被执行一次， 因为有$this->_behaviors===null判断，第一次执行后，这个判断就不成立了）
+     * 这么众星拱月，被诸多凡人所需要的 ensureBehaviors() 究竟是何许人也？ 就像名字所表明的，他的作用在于“ensure” 。其实只是确保 behaviors() 中所描述的行为已经进行了绑定而已:
      */
     public function ensureBehaviors()
     {
+        // 为null表示尚未绑定
+        // 多说一句，为空数组表示没有绑定任何行为，和null是有区别的。
         if ($this->_behaviors === null) {
             $this->_behaviors = [];
+            // 遍历 $this->behaviors() 返回的数组，并绑定
             foreach ($this->behaviors() as $name => $behavior) {
                 $this->attachBehaviorInternal($name, $behavior);
             }
@@ -749,15 +756,16 @@ class Component extends BaseObject
      */
     private function attachBehaviorInternal($name, $behavior)
     {
+        // 不是 Behavior 实例，说是只是类名、配置数组，那么就创建出来吧
         if (!($behavior instanceof Behavior)) {
             $behavior = Yii::createObject($behavior);
         }
         if (is_int($name)) {
-            // 没名的behavior直接绑定
+            // 匿名的behavior直接绑定
             $behavior->attach($this);
             $this->_behaviors[] = $behavior;
         } else {
-            // 对于有名的behavior，重复绑定前，先解绑
+            // 命名的behavior，重复绑定前，先解绑
             if (isset($this->_behaviors[$name])) {
                 // 解绑
                 $this->_behaviors[$name]->detach();
