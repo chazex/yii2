@@ -11,6 +11,7 @@ use Yii;
 use yii\helpers\StringHelper;
 
 /**
+ * Component 是实现 property， event， behavior 的基类。
  * Component is the base class that implements the *property*, *event* and *behavior* features.
  *
  * Component provides the *event* and *behavior* features, in addition to the *property* feature which is implemented in
@@ -726,6 +727,7 @@ class Component extends BaseObject
 
     /**
      * Makes sure that the behaviors declared in [[behaviors()]] are attached to this component.
+     * 确保通过 [[behaviors()]] 方法声明的behaviors， 被绑定到组件上
      */
     public function ensureBehaviors()
     {
@@ -751,13 +753,18 @@ class Component extends BaseObject
             $behavior = Yii::createObject($behavior);
         }
         if (is_int($name)) {
+            // 没名的behavior直接绑定
             $behavior->attach($this);
             $this->_behaviors[] = $behavior;
         } else {
+            // 对于有名的behavior，重复绑定前，先解绑
             if (isset($this->_behaviors[$name])) {
+                // 解绑
                 $this->_behaviors[$name]->detach();
             }
+            // 设置behavior的owner
             $behavior->attach($this);
+            // 绑定
             $this->_behaviors[$name] = $behavior;
         }
 
