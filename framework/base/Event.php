@@ -10,6 +10,9 @@ namespace yii\base;
 use yii\helpers\StringHelper;
 
 /**
+ * 这个类的功能我想做一下区分， 首先对于实例级别的事件，这个类，一般只用于数据传递。 传递数据的方式，我们可以通过它的$data（只能在做事件绑定的时候传递）， 还可以通过创建一个子类，多添加一些属性（可以在事件触发的时候传递）。
+ * 而事件的注册和事件的触发处理逻辑，则是在Component中实现的。
+ * 对于类级别的事件，事件的注册和事件的触发处理逻辑 实现都在这个类里面。
  * Event is the base class for all event classes.
  *
  * It encapsulates the parameters associated with an event.
@@ -49,6 +52,7 @@ class Event extends BaseObject
     /**
      * @var mixed the data that is passed to [[Component::on()]] when attaching an event handler.
      * Note that this varies according to which event handler is currently executing.
+     * 使用 [[Component::on()]]做事件绑定的时候，传递的数据（或者说叫参数），最终会赋值到这个$data属性上
      */
     public $data;
 
@@ -279,18 +283,23 @@ class Event extends BaseObject
         $event->handled = false;
         $event->name = $name;
 
+        // 参数$class 可以是一个对象，也可以是类的全限定名， 所以需要做一下区别处理
         if (is_object($class)) {
             if ($event->sender === null) {
                 $event->sender = $class;
             }
+            // 如果是对象， 我们获取一下对象的类名
             $class = get_class($class);
         } else {
             $class = ltrim($class, '\\');
         }
 
+        // 合并类、父类、接口
         $classes = array_merge(
             [$class],
+            // 获取类的所有父类
             class_parents($class, true),
+            // 获取类实现了哪些接口
             class_implements($class, true)
         );
 
