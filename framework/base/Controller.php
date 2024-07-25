@@ -147,6 +147,7 @@ class Controller extends Component implements ViewContextInterface
      */
     public function runAction($id, $params = [])
     {
+        // 创建action
         $action = $this->createAction($id);
         if ($action === null) {
             throw new InvalidRouteException('Unable to resolve the request: ' . $this->getUniqueId() . '/' . $id);
@@ -165,10 +166,13 @@ class Controller extends Component implements ViewContextInterface
         $runAction = true;
 
         // call beforeAction on modules
+        // module的遍历是从最外层module开始，依次向内。 所以最外层的module的beforeAction()最先执行。
         foreach ($this->getModules() as $module) {
             if ($module->beforeAction($action)) {
+                // 遍历完成后， $modules里面存储的顺序和$this->getModules()返回的顺序正好相反，$modules中第一个元素是最内层module， 最后一个元素是最外层module。
                 array_unshift($modules, $module);
             } else {
+                // 任意一个执行失败，则不继续执行，并标记为失败。
                 $runAction = false;
                 break;
             }
@@ -176,10 +180,12 @@ class Controller extends Component implements ViewContextInterface
 
         $result = null;
 
+        // 执行controller的beforeAction()
         if ($runAction && $this->beforeAction($action)) {
             // run the action
+            // 运行Action （*****）
             $result = $action->runWithParams($params);
-
+            
             $result = $this->afterAction($action, $result);
 
             // call afterAction on modules
@@ -266,12 +272,15 @@ class Controller extends Component implements ViewContextInterface
 
     /**
      * This method is invoked right before an action is executed.
+     * 此方法在执行Action之前被调用。
      *
      * The method will trigger the [[EVENT_BEFORE_ACTION]] event. The return value of the method
      * will determine whether the action should continue to run.
+     * 这个方法会触发 [[EVENT_BEFORE_ACTION]] 事件。 这个方法的返回值会决定Action是否应该继续执行
      *
      * In case the action should not run, the request should be handled inside of the `beforeAction` code
      * by either providing the necessary output or redirecting the request. Otherwise the response will be empty.
+     * 如果Action不应该运行， 则应在 `beforeAction 代码中处理请求，处理的方法是提供必要的输出或重定向请求。否则响应将为空。
      *
      * If you override this method, your code should look like the following:
      *
@@ -331,16 +340,21 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 返回此controller的所有祖先modules
      * Returns all ancestor modules of this controller.
      * The first module in the array is the outermost one (i.e., the application instance),
      * while the last is the innermost one.
+     * 返回的数组中的首个元素，是最外层的module， 最后一个元素是最内层的module
      * @return Module[] all ancestor modules that this controller is located within.
      */
     public function getModules()
     {
+        // $this->module 获取的是此controller的父module（因为module可以嵌套，所以从controller向上找，可能找到很多的module，这个获取到的是和controller最近的module ）
         $modules = [$this->module];
         $module = $this->module;
+        // 递归向上遍历到所有的module
         while ($module->module !== null) {
+            // array_unshift() 方法用于在数组的开头插入一个或多个元素。这个函数会将现有的元素向后移动，然后将新元素添加到数组的开头。
             array_unshift($modules, $module->module);
             $module = $module->module;
         }
