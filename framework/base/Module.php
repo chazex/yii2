@@ -593,16 +593,19 @@ class Module extends ServiceLocator
             $route = '';
         }
 
-        // module and controller map take precedence
+        // module and controller map take precedence (优先）
         if (isset($this->controllerMap[$id])) {
             $controller = Yii::createObject($this->controllerMap[$id], [$id, $this]);
             return [$controller, $route];
         }
+        // 判断是否是模块
         $module = $this->getModule($id);
         if ($module !== null) {
+            // 如果属于模块，则通过模块创建控制器。（$module->createController内部，还会有类似的逻辑用来判断是否存在子模块）
             return $module->createController($route);
         }
 
+        // 将route拆分一下， 如 id=/a  route=/b/c/d =>  id=/a/b route=/c/d
         if (($pos = strrpos($route, '/')) !== false) {
             $id .= '/' . substr($route, 0, $pos);
             $route = substr($route, $pos + 1);
