@@ -397,6 +397,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 运行应用， 这是程序的主要入口。
      * Runs the application.
      * This is the main entrance of an application.
      * @return int the exit status (0 means normal, non-zero values mean abnormal)
@@ -404,19 +405,27 @@ abstract class Application extends Module
     public function run()
     {
         try {
+            // 设置状态为 “请求处理前”
             $this->state = self::STATE_BEFORE_REQUEST;
+            // 触发事件 “请求处理前”
             $this->trigger(self::EVENT_BEFORE_REQUEST);
 
+            // 设置状态为 “请求处理中”
             $this->state = self::STATE_HANDLING_REQUEST;
+            // 处理请求，并获得响应 （*****）
             $response = $this->handleRequest($this->getRequest());
 
+            // 设置状态为 “请求处理后”
             $this->state = self::STATE_AFTER_REQUEST;
+            // 触发事件 “请求处理后”
             $this->trigger(self::EVENT_AFTER_REQUEST);
 
+            // 设置状态为 “响应发送中”
             $this->state = self::STATE_SENDING_RESPONSE;
             // 发送Response响应
             $response->send();
 
+            // 设置状态为 “响应发送完成”
             $this->state = self::STATE_END;
 
             return $response->exitStatus;
