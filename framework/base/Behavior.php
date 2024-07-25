@@ -8,6 +8,7 @@
 namespace yii\base;
 
 /**
+ * Behavior类 是所有行为类的基类（言外之意就是所有的行为类，都需要继承此类）。
  * Behavior is the base class for all behavior classes.
  *
  * A behavior can be used to enhance the functionality of an existing component without modifying its code.
@@ -24,6 +25,11 @@ class Behavior extends BaseObject
 {
     /**
      * @var Component|null the owner of this behavior
+     * owner 表示hehavior的所有者，即behavior所绑定到的Component.
+     * 
+     * 我们已经知道， behavior的作用是扩展Component的功能，而不需要修改组件的代码。
+     * 所以当一个behavior使用的时候，需要绑定到一个具体的Component上面，目的是指明behavior到底是扩展哪个Component的功能。
+     * 在绑定的时候, 使用[[attach($owner)]]， 就会给owner赋值为 behavior所绑定到的Component。
      */
     public $owner;
 
@@ -35,13 +41,18 @@ class Behavior extends BaseObject
 
     /**
      * Declares event handlers for the [[owner]]'s events.
+     * 为owner的事件，声明事件处理器。 
+     * 特别注意， 这些事件必须是owner所声明的，如果不是，则无意义。 因为只有owner自己声明的事件，才会在owner中被触发（trigger）
+     * Behavior是基类，所以我们并不知道它的各个子类要绑定到哪个Component上，自然也就不知道owner Component有哪些事件，所以默认值就是空数组。
      *
      * Child classes may override this method to declare what PHP callbacks should
      * be attached to the events of the [[owner]] component.
+     * 子类可以通过override这个方法，指明 [[owner]] component 的事件应该绑定哪个回调方法
      *
      * The callbacks will be attached to the [[owner]]'s events when the behavior is
      * attached to the owner; and they will be detached from the events when
      * the behavior is detached from the component.
+     * 当behavior绑定到owner Component的时候，回调函数将会被绑定到owner的事件上，当behavior从owner component解绑的时候，回调函数也将从事件中解绑。
      *
      * The callbacks can be any of the following:
      *
