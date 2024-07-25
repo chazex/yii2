@@ -11,11 +11,14 @@ use Yii;
 use yii\di\ServiceLocator;
 
 /**
+ * Module类是 模块 和 应用的基类。
  * Module is the base class for module and application classes.
  *
+ * 一个模块表示一个子应用， 它有自己的MVC元素， 比如 模型、视图、控制器。
  * A module represents a sub-application which contains MVC elements by itself, such as
  * models, views, controllers, etc.
  *
+ * 模块可以嵌套，所以它内部还可以包含子模块。
  * A module may consist of [[modules|sub-modules]].
  *
  * [[components|Components]] may be registered with the module so that they are globally
@@ -514,6 +517,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 通过指定的路由，运行一个 controller action。
      * Runs a controller action specified by a route.
      * This method parses the specified route and creates the corresponding child module(s), controller and action
      * instances. It then calls [[Controller::runAction()]] to run the action with the given parameters.
@@ -525,14 +529,19 @@ class Module extends ServiceLocator
      */
     public function runAction($route, $params = [])
     {
+        // 通过路由创建控制器
         $parts = $this->createController($route);
         if (is_array($parts)) {
             /* @var $controller Controller */
             list($controller, $actionID) = $parts;
+            // 临时保存 oldController
             $oldController = Yii::$app->controller;
             Yii::$app->controller = $controller;
+            // 运行controller的action, runAction()方法在yii\base\controller里面。
             $result = $controller->runAction($actionID, $params);
             if ($oldController !== null) {
+                // 存在oldController，则还原
+                // 这块是在做什么？ 什么情况会有oldController
                 Yii::$app->controller = $oldController;
             }
 
