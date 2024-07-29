@@ -72,12 +72,16 @@ class User extends Component
     /**
      * @var bool whether to enable cookie-based login. Defaults to `false`.
      * Note that this property will be ignored if [[enableSession]] is `false`.
+     * 是否允许基于cookie的登录， 默认是false。
+     * 注意， 如果[[enableSession]]是false， 那么这个属性将会被会略。（简言之，要想使用基于cookie的登录，那么必须开启session）
      */
     public $enableAutoLogin = false;
     /**
      * @var bool whether to use session to persist authentication status across multiple requests.
      * You set this property to be `false` if your application is stateless, which is often the case
      * for RESTful APIs.
+     * 是否使用session，以便在多次请求中，来保持我们的身份验证状态。
+     *　如果你的应用是无状态的，可以设置未false，通常是RESTful APIs.
      */
     public $enableSession = true;
     /**
