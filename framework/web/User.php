@@ -86,6 +86,7 @@ class User extends Component
      * Note that this property will be ignored if [[enableSession]] is `false`.
      * 是否允许基于cookie的登录， 默认是false。
      * 注意， 如果[[enableSession]]是false， 那么这个属性将会被会略。（简言之，要想使用基于cookie的登录，那么必须开启session）
+     * 场景： 登陆时，勾选记住我(remember me)。https://www.yiiframework.com/doc/guide/2.0/en/security-authentication
      */
     public $enableAutoLogin = false;
     /**
