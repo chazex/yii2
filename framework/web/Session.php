@@ -267,11 +267,34 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     public function getHasSessionId()
     {
         if ($this->_hasSessionId === null) {
+            // 获取会话 cookie 的名称，默认是PHPSESSID
             $name = $this->getName();
             $request = Yii::$app->getRequest();
+            /*
+            session.use_cookies 是 PHP 的一个配置项，决定了是否使用 cookies 来传递会话 ID。具体作用如下：
+            启用 cookies：当 session.use_cookies 设置为 1（或 true）时，PHP 会通过浏览器的 cookies 来存储和管理会话 ID。这是一般情况下的推荐做法，因为 cookies 能够自动在每个请求中发送会话 ID，提高了安全性和便利性。
+            禁用 cookies：如果将其设置为 0（或 false），会话 ID 将不会通过 cookies 传递。此时，开发者需要手动将会话 ID 作为 URL 参数传递。这种方法通常不安全，因为会话 ID 容易被窥探或被窃取。
+            
+            总结
+            默认值: 通常在 php.ini 中默认设置为 1，推荐使用。
+            安全性: 使用 cookies 为会话管理提供了一层安全性，避免了 URL 中暴露敏感信息。
+            用户体验: 使用 cookies 提供了更好的用户体验，因为用户不需要在每个链接中都带上会话 ID。
+            */
             if (!empty($_COOKIE[$name]) && ini_get('session.use_cookies')) {
+                // cookie中存在， 并且还要判断php的配置，是否开启使用cookies来传递会话ID。
                 $this->_hasSessionId = true;
             } elseif (!ini_get('session.use_only_cookies') && ini_get('session.use_trans_sid')) {
+                /*
+                session.use_trans_sid 是 PHP 的一个配置项，用于控制会话 ID 的传递方式，尤其是在 session.use_cookies 被禁用时。其作用如下：
+                启用自动传递会话 ID：当 session.use_trans_sid 设置为 1（或 true）时，PHP 会在生成的 URLs 中自动附加会话 ID。这意味着如果用户的浏览器不支持 cookies，PHP 会在链接中包含会话 ID，确保会话的状态能通过 URL 得以维持。
+                禁用自动传递：如果将其设置为 0（或 false），则不会在 URL 中自动添加会话 ID。在这种情况下，如果 cookies 也被禁用，用户将无法维持会话状态。
+                
+                总结
+                默认值: 通常整数 0，并不启用。
+                使用场景: 主要用于提高在没有 cookies 时的会话管理能力，但此方法对安全性有较大影响。
+                安全性考虑: 将会话 ID 嵌入 URL 增加了信息泄露的风险，尤其是在链接被分享或暴露的情况下。
+                */
+                // 通过get请求获取 会话ID
                 $this->_hasSessionId = $request->get($name) != '';
             } else {
                 $this->_hasSessionId = false;
