@@ -15,17 +15,26 @@ use yii\di\Instance;
 use yii\rbac\CheckAccessInterface;
 
 /**
+ * User 是 “用户” 应用程序组件的类，它管理用户的 身份验证 状态。
+ * 身份验证的作用是，识别是你谁， 至于你有哪些权限，不是身份验证的职责。
  * User is the class for the `user` application component that manages the user authentication status.
  *
+ * 你可以使用 [[isGuest]] 来判断当前用户是不是一个 访客。
+ * PS： 访客指的是用户未登录。
+ * 如果用户是一个访客，[[identity]] 会返回null。 否则，它是实现了 [[IdentityInterface]] 接口的一个实例。
  * You may use [[isGuest]] to determine whether the current user is a guest or not.
  * If the user is a guest, the [[identity]] property would return `null`. Otherwise, it would
  * be an instance of [[IdentityInterface]].
  *
  * You may call various methods to change the user authentication status:
+ * 你可以调用各种各样的方法来改变用户的身份验证状态。
  *
  * - [[login()]]: sets the specified identity and remembers the authentication status in session and cookie;
+ *                通过session 和 cookie记住身份验证状态
  * - [[logout()]]: marks the user as a guest and clears the relevant information from session and cookie;
+ *                标记一个用户为访客，从session和cookie中清除相关的信息
  * - [[setIdentity()]]: changes the user identity without touching session or cookie
+ *                      改变用户的身份信息，而不修改session和cookie
  *   (this is best used in stateless RESTful API implementation).
  *
  * Note that User only maintains the user authentication status. It does NOT handle how to authenticate
@@ -49,8 +58,11 @@ use yii\rbac\CheckAccessInterface;
  *
  * @property-read string|int $id The unique identifier for the user. If `null`, it means the user is a guest.
  * This property is read-only.
+ *  用户的唯一标识符。 如果是 null， 这意味着用户是一个访客。
+ * 这个属性是只读的。
  * @property IdentityInterface|null $identity The identity object associated with the currently logged-in
  * user. `null` is returned if the user is not logged in (not authenticated).
+ *　关联当前登录的用户。　如果用户没有登录，则为null（未身份验证）
  * @property-read bool $isGuest Whether the current user is a guest. This property is read-only.
  * @property string $returnUrl The URL that the user should be redirected to after login. Note that the type
  * of this property differs in getter and setter. See [[getReturnUrl()]] and [[setReturnUrl()]] for details.
@@ -100,6 +112,7 @@ class User extends Component
     /**
      * @var array the configuration of the identity cookie. This property is used only when [[enableAutoLogin]] is `true`.
      * @see Cookie
+     * httpOnly表示JavaScript无法访问这个cookie， 提高了安全性
      */
     public $identityCookie = ['name' => '_identity', 'httpOnly' => true];
     /**
