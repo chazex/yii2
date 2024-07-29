@@ -709,8 +709,11 @@ class User extends Component
      */
     protected function renewAuthStatus()
     {
+        // 获取session组件（如果session组件还未创建，则会创建， 创建的时候，会根据我们在配置文件中的配置的name属性，从而调用到setName()方法，在setName()方法中，会调用PHP的session_name($name)来覆盖默认值"PHPSESSID"
         $session = Yii::$app->getSession();
         // 尝试从session中，拿到用户的ID
+        // $session->getHasSessionId() 函数用来判断 本次请求中，是否包含session ID信息（会检查cookie 和 $_GET)。
+        // 大概逻辑是， 
         $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->idParam) : null;
 
         if ($id === null) {
