@@ -258,6 +258,9 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     private $_hasSessionId;
 
     /**
+     * 返回布尔值，用于表示当前的请求中，是否包含session ID.
+     * 包含session ID的方式可能有不同的情况， 此函数是默认实现，它会尝试从$_COOKIE，以及$_GET中获取.
+     * 如果你发送session ID 通过其他的方式， 你可能需要去override这个函数，或者调用 [[setHasSessionId()]]， 来明确的设置请求中是否包含session ID。
      * Returns a value indicating whether the current request has sent the session ID.
      * The default implementation will check cookie and $_GET using the session name.
      * If you send session ID via other ways, you may need to override this method
