@@ -129,6 +129,8 @@ class User extends Component
     public $autoRenewCookie = true;
     /**
      * @var string the session variable name used to store the value of [[id]].
+     * 当我们开启session之后， 第一次请求到后端后，PHP会自动生成会话ID。后续请求中的cookie会携带会话ID，服务端通过会话ID，拿到此会话的session信息。
+     * session信息中，存储了用户的信息，其中idParam， 表示session中存储用户ID的key是什么。 即$_SESSION[$idParam] 可拿到用户的ID。
      */
     public $idParam = '__id';
     /**
@@ -690,17 +692,21 @@ class User extends Component
     protected function renewAuthStatus()
     {
         $session = Yii::$app->getSession();
+        // 尝试从session中，拿到用户的ID
         $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->idParam) : null;
 
         if ($id === null) {
             $identity = null;
         } else {
             /* @var $class IdentityInterface */
+            // 根据用户的ID去查找用户的信息
             $class = $this->identityClass;
             $identity = $class::findIdentity($id);
         }
 
         if ($identity !== null) {
+            // 这里貌似做了一个更深入的校验。 在session中，除了存储用户的ID，还可以存储一个校验的KEY($_SESSION[$this->authKeyParam]获取)，可以用来做更深入的一次校验。 
+            // 当然，如果我们在session中不做配置，就不会校验了。
             $authKey = $session->get($this->authKeyParam);
             if ($authKey !== null && !$identity->validateAuthKey($authKey)) {
                 $identity = null;
@@ -711,12 +717,18 @@ class User extends Component
 
         $this->setIdentity($identity);
 
+        // 登录过期时间判断。
         if ($identity !== null && ($this->authTimeout !== null || $this->absoluteAuthTimeout !== null)) {
+            // 如果配置了相对过期时间， 则计算出相对过期时间。 场景是， 每次用户的请求，都需要判断本次请求和上次请求间隔了多长时间，如果间隔时间超过阈值，表示用户长时间未操作（inactive），触发退出登录。 
+            // 如果未超过阈值， 那么需要在session中刷新时间，用于下次请求时判断。
             $expire = $this->authTimeout !== null ? $session->get($this->authTimeoutParam) : null;
+            // 如果设置了绝对过期时间， 则获取绝对过期时间。 场景是， 自用户登录时刻起，无论用户操作频繁或者不频繁，到指定的时间，必须重新登录。 比如用户24小时，必须做重新登录的权限验证。
             $expireAbsolute = $this->absoluteAuthTimeout !== null ? $session->get($this->absoluteAuthTimeoutParam) : null;
+            // 相对过期时间，和绝对过期时间，任何一个满足过期条件， 则退出登录。
             if ($expire !== null && $expire < time() || $expireAbsolute !== null && $expireAbsolute < time()) {
                 $this->logout(false);
             } elseif ($this->authTimeout !== null) {
+                // 在session中，重新设置相对过期时间
                 $session->set($this->authTimeoutParam, time() + $this->authTimeout);
             }
         }
